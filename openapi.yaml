@@ -1,0 +1,363 @@
+components:
+  responses:
+    DEFAULT_ERROR:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+      description: Default error response
+    UNPROCESSABLE_ENTITY:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+      description: Unprocessable Entity
+  schemas:
+    Error:
+      properties:
+        code:
+          description: Error code
+          type: integer
+        errors:
+          description: Errors
+          type: object
+        message:
+          description: Error message
+          type: string
+        status:
+          description: Error name
+          type: string
+      type: object
+    Item:
+      properties:
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+        unit_price:
+          type: number
+      type: object
+    Item1:
+      properties:
+        created_at:
+          format: date-time
+          readOnly: true
+          type: string
+        description:
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+        store:
+          allOf:
+          - $ref: '#/components/schemas/Store1'
+          readOnly: true
+        store_id:
+          type: integer
+          writeOnly: true
+        unit_price:
+          type: number
+      type: object
+    ItemCreate:
+      properties:
+        created_at:
+          format: date-time
+          readOnly: true
+          type: string
+        description:
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        name:
+          type: string
+        store:
+          allOf:
+          - $ref: '#/components/schemas/Store1'
+          readOnly: true
+        store_id:
+          type: integer
+        unit_price:
+          type: number
+      required:
+      - description
+      - name
+      - store_id
+      - unit_price
+      type: object
+    PaginationMetadata:
+      properties:
+        first_page:
+          type: integer
+        last_page:
+          type: integer
+        next_page:
+          type: integer
+        page:
+          type: integer
+        previous_page:
+          type: integer
+        total:
+          type: integer
+        total_pages:
+          type: integer
+      type: object
+    Store:
+      properties:
+        created_at:
+          format: date-time
+          readOnly: true
+          type: string
+        description:
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        location:
+          type: string
+        name:
+          type: string
+      type: object
+    Store1:
+      properties:
+        id:
+          readOnly: true
+          type: integer
+      type: object
+    StoreCreate:
+      properties:
+        created_at:
+          format: date-time
+          readOnly: true
+          type: string
+        description:
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        location:
+          type: string
+        name:
+          type: string
+      required:
+      - description
+      - location
+      - name
+      type: object
+    StoreResponse:
+      properties:
+        created_at:
+          format: date-time
+          readOnly: true
+          type: string
+        description:
+          type: string
+        id:
+          readOnly: true
+          type: integer
+        items:
+          items:
+            $ref: '#/components/schemas/Item'
+          type: array
+        location:
+          type: string
+        name:
+          type: string
+      type: object
+info:
+  title: Store API
+  version: v1
+openapi: 3.0.2
+paths:
+  /api/v1/items/:
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Item1'
+                type: array
+          description: OK
+        default:
+          $ref: '#/components/responses/DEFAULT_ERROR'
+      summary: Get Item List
+      tags:
+      - items
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemCreate'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item1'
+          description: Created
+        '422':
+          $ref: '#/components/responses/UNPROCESSABLE_ENTITY'
+        default:
+          $ref: '#/components/responses/DEFAULT_ERROR'
+      summary: Create Item
+      tags:
+      - items
+  /api/v1/items/{item_id}:
+    delete:
+      responses:
+        '204':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item1'
+          description: No Content
+        default:
+          $ref: '#/components/responses/DEFAULT_ERROR'
+      summary: Delete Item By ID
+      tags:
+      - items
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item1'
+          description: OK
+        default:
+          $ref: '#/components/responses/DEFAULT_ERROR'
+      summary: Get Item By ID
+      tags:
+      - items
+    parameters:
+    - in: path
+      name: item_id
+      required: true
+      schema:
+        minimum: 0
+        type: integer
+    patch:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Item1'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item1'
+          description: OK
+        '422':
+          $ref: '#/components/responses/UNPROCESSABLE_ENTITY'
+        default:
+          $ref: '#/components/responses/DEFAULT_ERROR'
+      summary: Update Item By ID
+      tags:
+      - items
+  /api/v1/stores/:
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Store'
+                type: array
+          description: OK
+        default:
+          $ref: '#/components/responses/DEFAULT_ERROR'
+      summary: Get Store List
+      tags:
+      - stores
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreCreate'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: Created
+        '422':
+          $ref: '#/components/responses/UNPROCESSABLE_ENTITY'
+        default:
+          $ref: '#/components/responses/DEFAULT_ERROR'
+      summary: Create Store
+      tags:
+      - stores
+  /api/v1/stores/{store_id}:
+    delete:
+      responses:
+        '204':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: No Content
+        default:
+          $ref: '#/components/responses/DEFAULT_ERROR'
+      summary: Delete Store By ID
+      tags:
+      - stores
+    get:
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreResponse'
+          description: OK
+        default:
+          $ref: '#/components/responses/DEFAULT_ERROR'
+      summary: Get Store By ID
+      tags:
+      - stores
+    parameters:
+    - in: path
+      name: store_id
+      required: true
+      schema:
+        minimum: 0
+        type: integer
+    patch:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Store'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: OK
+        '422':
+          $ref: '#/components/responses/UNPROCESSABLE_ENTITY'
+        default:
+          $ref: '#/components/responses/DEFAULT_ERROR'
+      summary: Update Store By ID
+      tags:
+      - stores
+tags:
+- description: Operations on stores
+  name: stores
+- description: Operations on items
+  name: items
