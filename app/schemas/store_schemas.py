@@ -6,6 +6,7 @@ class StoreSchema(ma.Schema):
     name = ma.fields.String()
     description = ma.fields.String()
     location = ma.fields.String()
+    tags = ma.fields.List(ma.fields.Nested("TagSchema"))
     created_at = ma.fields.DateTime(dump_only=True)
 
 

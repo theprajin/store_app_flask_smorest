@@ -8,7 +8,7 @@ from app.app import db, URL_PREFIX
 
 item_blp = Blueprint(
     "items",
-    "items",
+    __name__,
     url_prefix=f"{URL_PREFIX}/items",
     description="Operations on items",
 )

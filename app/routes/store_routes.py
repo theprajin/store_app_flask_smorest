@@ -11,7 +11,7 @@ from app.app import db, URL_PREFIX
 
 store_blp = Blueprint(
     "stores",
-    "stores",
+    __name__,
     url_prefix=f"{URL_PREFIX}/stores",
     description="Operations on stores",
 )

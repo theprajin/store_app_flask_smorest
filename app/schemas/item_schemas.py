@@ -9,6 +9,7 @@ class ItemSchema(ma.Schema):
     unit_price = ma.fields.Float()
     store_id = ma.fields.Int(load_only=True)
     store = ma.fields.Nested(StoreSchema, only=("id",), dump_only=True)
+    tags = ma.fields.List(ma.fields.Nested("TagSchema"))
     created_at = ma.fields.DateTime(dump_only=True)
 
 
@@ -17,3 +18,7 @@ class ItemCreateSchema(ItemSchema):
     description = ma.fields.String(required=True)
     unit_price = ma.fields.Float(required=True)
     store_id = ma.fields.Int(required=True)
+
+
+class ItemResponseSchema(ItemSchema):
+    tag = ma.fields.Nested("TagItemSchema", only=("id", "item_id"), many=True)
