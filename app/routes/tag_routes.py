@@ -9,6 +9,7 @@ from app.models.store_model import Store
 from app.models.item_model import Item
 from app.schemas.tag_schemas import TagSchema, TagResponseSchema
 from app.schemas.store_schemas import StoreTagSchema
+from app.schemas.item_schemas import ItemTagSchema
 
 
 tag_blp = Blueprint(
@@ -25,7 +26,7 @@ tag_blp = Blueprint(
 @tag_blp.route("/stores/<int:store_id>/tags")
 class StoreTag(MethodView):
 
-    @tag_blp.response(200)
+    @tag_blp.response(200, StoreTagSchema(many=True))
     def get(self, store_id):
         """Get Store Tags"""
 
@@ -38,9 +39,7 @@ class StoreTag(MethodView):
             if store is None:
                 return jsonify({"message": f"Store with id: {store_id} not found"}), 404
 
-            tags_list = [{"id": tag.id, "name": tag.name} for tag in tags]
-
-            return jsonify(tags_list)
+            return tags
         except Exception as e:
             print(e)
 
@@ -130,7 +129,8 @@ class StoreTagByID(MethodView):
 # Item Tag Routes
 @tag_blp.route("/items/<int:item_id>/tags")
 class ItemTag(MethodView):
-    @tag_blp.response(200)
+
+    @tag_blp.response(200, ItemTagSchema(many=True))
     def get(self, item_id):
         """Get Item Tags"""
 
@@ -141,9 +141,7 @@ class ItemTag(MethodView):
             if item is None:
                 return jsonify({"message": f"Store with id: {item_id} not found"}), 404
 
-            tags_list = [{"id": tag.id, "name": tag.name} for tag in tags]
-
-            return jsonify(tags_list)
+            return tags
         except Exception as e:
             print(e)
 
