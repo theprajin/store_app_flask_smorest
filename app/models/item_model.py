@@ -16,3 +16,6 @@ class Item(db.Model):
         cascade="all, delete",
     )
     created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    def __str__(self):
+        return self.name
