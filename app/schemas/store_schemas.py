@@ -6,8 +6,11 @@ class StoreSchema(ma.Schema):
     name = ma.fields.String()
     description = ma.fields.String()
     location = ma.fields.String()
-    tags = ma.fields.List(ma.fields.Nested("TagSchema"))
     created_at = ma.fields.DateTime(dump_only=True)
+
+
+class StoreTagSchema(StoreSchema):
+    tags = ma.fields.List(ma.fields.Nested("TagSchema"), dump_only=True)
 
 
 class StoreCreateSchema(StoreSchema):
@@ -20,3 +23,4 @@ class StoreResponseSchema(StoreSchema):
     items = ma.fields.Nested(
         "ItemSchema", only=("id", "name", "unit_price"), many=True, exclude=("store",)
     )
+    tags = ma.fields.List(ma.fields.Nested("TagSchema"), dump_only=True)

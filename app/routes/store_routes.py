@@ -6,6 +6,7 @@ from app.schemas.store_schemas import (
     StoreSchema,
     StoreCreateSchema,
     StoreResponseSchema,
+    StoreTagSchema,
 )
 from app.app import db, URL_PREFIX
 
@@ -51,11 +52,12 @@ class Stores(MethodView):
 @store_blp.route("/<int:store_id>")
 class StoreByID(MethodView):
 
-    @store_blp.response(200, StoreResponseSchema)
+    @store_blp.response(200, StoreTagSchema)
     def get(self, store_id):
         """Get Store By ID"""
         try:
             store = Store.query.get(store_id)
+            print(store)
 
             if store is None:
 

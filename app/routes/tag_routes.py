@@ -3,33 +3,37 @@ from flask_smorest import Blueprint, abort
 from app.models.tag_model import Tag
 from app.app import URL_PREFIX, db
 from app.models.tag_model import Tag
-from app.schemas.tag_schemas import TagSchema
+from app.models.store_model import Store
+from app.schemas.tag_schemas import TagSchema, TagResponseSchema, TagCreateSchema
 
 tag_blp = Blueprint(
     "tags", __name__, url_prefix=f"{URL_PREFIX}/tags", description="Operations on tags"
 )
 
 
-@tag_blp.route("/")
-class Tags(MethodView):
-
-    @tag_blp.response(200, TagSchema(many=True))
-    def get(self):
-        """List Tags"""
-
-        try:
-            tags = Tag.query.all()
-            return tags
-        except Exception as e:
-            print(e)
+@tag_blp.route("/stores/<int:store_id>/tags")
+class StoreTag(MethodView):
+    @tag_blp.response(200, TagSchema)
+    def get(self, store_id):
+        """Get Store Tags"""
+        pass
 
     @tag_blp.arguments(TagSchema)
-    @tag_blp.response(201, TagSchema)
-    def post(self, new_data):
-        """Create a new Tag"""
-
+    @tag_blp.response(200, TagResponseSchema)
+    def post(self, new_data, store_id):
+        """Create Store Tags"""
         try:
+            store = Store.query.get(store_id)
+            name = new_data.get("name")
             tag = Tag(**new_data)
+            if name in store.tags:
+                return jsonify(
+                    {
+                        "message": f"{name } tag already exists in store with id {store_id}"
+                    }
+                )
+            store.tags.append(tag)
+
             db.session.add(tag)
             db.session.commit()
 
@@ -38,50 +42,23 @@ class Tags(MethodView):
             print(e)
 
 
-@tag_blp.route("/<int:tag_id>")
-class TagById(MethodView):
+@tag_blp.route("stores//<int:store_id>/tags/<int:tag_id>")
+class StoreTagByID(MethodView):
 
-    @tag_blp.response(200, TagSchema)
-    def get(self, tag_id):
-        """Get Tag by ID"""
-
+    @tag_blp.response(200, TagResponseSchema)
+    def delete(self, store_id, tag_id):
+        """Remove Store Tags"""
         try:
+            store = Store.query.get(store_id)
+            if store is None:
+                return jsonify({"message": f"Store with id: {store_id} not found"}), 404
+
             tag = Tag.query.get(tag_id)
-            if not tag:
-                abort(404, message="Tag not found.")
+            if tag is None:
+                return jsonify({"message": f"Tag with id: {tag_id} not found"}), 404
+            store.tags.remove(tag)
 
-            return tag
-        except Exception as e:
-            print(e)
-
-    @tag_blp.arguments(TagSchema)
-    @tag_blp.response(200, TagSchema)
-    def put(self, update_data, tag_id):
-        """Update a Tag"""
-
-        try:
-            tag = Tag.query.get(tag_id)
-            if not tag:
-                abort(404, message="Tag not found.")
-            for key, value in update_data.items():
-                setattr(tag, key, value)
             db.session.commit()
-
-            return tag
-        except Exception as e:
-            print(e)
-
-    @tag_blp.response(204)
-    def delete(self, tag_id):
-        """Delete a Tag"""
-
-        try:
-            tag = Tag.query.get(tag_id)
-            if not tag:
-                abort(404, message="Tag not found.")
-            db.session.delete(tag)
-            db.session.commit()
-
             return tag
         except Exception as e:
             print(e)
