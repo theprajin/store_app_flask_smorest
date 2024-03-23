@@ -30,3 +30,7 @@ class TagStoreSchema(TagSchema):
 
 class TagItemSchema(TagSchema):
     item = ma.fields.Nested(ItemSchema, only=("id",), dump_only=True, exclude=("tags",))
+
+
+class StoreTagResponseSchema(ma.Schema):
+    tags = ma.fields.List(ma.fields.Nested("TagResponseSchema"), dump_only=True)
