@@ -7,7 +7,6 @@ from app.models.store_model import Store
 from app.schemas.store_schemas import (
     StoreSchema,
     StoreCreateSchema,
-    StoreResponseSchema,
     StoreTagSchema,
     StoreQuerySchema,
 )

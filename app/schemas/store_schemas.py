@@ -19,13 +19,6 @@ class StoreCreateSchema(StoreSchema):
     location = ma.fields.String(required=True)
 
 
-class StoreResponseSchema(StoreSchema):
-    items = ma.fields.Nested(
-        "ItemSchema", only=("id", "name", "unit_price"), many=True, exclude=("store",)
-    )
-    tags = ma.fields.List(ma.fields.Nested("TagSchema"), dump_only=True)
-
-
 class StoreQuerySchema(ma.Schema):
     name = ma.fields.String(required=False)
     location = ma.fields.String(required=False)

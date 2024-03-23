@@ -35,10 +35,6 @@ class ItemTagSchema(ItemSchema):
     tags = ma.fields.List(ma.fields.Nested("TagSchema"), dump_only=True)
 
 
-class ItemResponseSchema(ItemSchema):
-    tags = ma.fields.List(ma.fields.Nested("TagSchema"))
-
-
 class ItemQuerySchema(ma.Schema):
     name = ma.fields.String(required=False)
     unit_price = ma.fields.Float(required=False)
