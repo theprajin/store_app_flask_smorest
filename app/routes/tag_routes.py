@@ -30,7 +30,7 @@ tag_blp = Blueprint(
 @tag_blp.route("/stores/<int:store_id>/tags")
 class StoreTag(MethodView):
 
-    @tag_blp.response(200, StoreTagResponseSchema)
+    @tag_blp.response(200)
     def get(self, store_id):
         """Get Store Tags"""
 
@@ -135,7 +135,7 @@ class StoreTagByID(MethodView):
 # Item Tag Routes
 @tag_blp.route("/items/<int:item_id>/tags")
 class ItemTag(MethodView):
-    @tag_blp.response(200, StoreTagResponseSchema)
+    @tag_blp.response(200)
     def get(self, item_id):
         """Get Item Tags"""
 

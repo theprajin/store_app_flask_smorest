@@ -1,12 +1,15 @@
 from flask import jsonify
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
+from sqlalchemy import desc
+
 from app.models.store_model import Store
 from app.schemas.store_schemas import (
     StoreSchema,
     StoreCreateSchema,
     StoreResponseSchema,
     StoreTagSchema,
+    StoreQuerySchema,
 )
 from app.app import db, URL_PREFIX
 
@@ -20,12 +23,45 @@ store_blp = Blueprint(
 
 @store_blp.route("/")
 class Stores(MethodView):
+
+    @store_blp.arguments(StoreQuerySchema, location="query")
     @store_blp.response(200, StoreSchema(many=True))
-    def get(self):
+    def get(self, queries):
         """Get Store List"""
         try:
-            stores = Store.query.all()
-            return stores
+            page = queries.pop("page", 1)
+            per_page = queries.pop("per_page", 10)
+            sortField = queries.pop("sortField", "")
+            sortDirection = queries.pop("sortDirection", "asc")
+
+            query = Store.query
+
+            # Filetering queries
+            if "name" in queries:
+                query = query.filter(Store.location.ilike(f"%{queries['name']}%"))
+
+            if "location" in queries:
+                query = query.filter(Store.location.ilike(f"%{queries['location']}%"))
+
+            # sorting queries
+            if sortField == "name":
+                if sortDirection == "desc":
+                    query = query.desc(Store.name)
+                else:
+                    query = query.order_by(Store.name)
+
+            if sortField == "location":
+                if sortDirection == "desc":
+                    query = query.order_by(desc(Store.location))
+                else:
+                    query = query.order_by(Store.location)
+
+            stores = query.paginate(per_page=per_page, page=page, error_out=False)
+
+            if not stores.items and page != 1:
+                abort(404, message="Page not found")
+
+            return stores.items
         except Exception as e:
             print(e)
 
@@ -39,12 +75,11 @@ class Stores(MethodView):
 
             if store:
                 return jsonify({"message": "Store already exists"}), 400
-
             else:
                 store = Store(**new_data)
                 db.session.add(store)
                 db.session.commit()
-            return store
+                return store
         except Exception as e:
             print(e)
 
@@ -60,8 +95,8 @@ class StoreByID(MethodView):
             print(store)
 
             if store is None:
-
                 return jsonify({"message": f"Store with id: {store_id} not found"}), 404
+
             return store
         except Exception as e:
             print(e)
@@ -80,6 +115,7 @@ class StoreByID(MethodView):
             store.description = new_data.get("description") or store.description
             store.location = new_data.get("location") or store.location
             db.session.commit()
+
             return store
         except Exception as e:
             print(e)
@@ -95,6 +131,7 @@ class StoreByID(MethodView):
 
             db.session.delete(store)
             db.session.commit()
+
             return store
         except Exception as e:
             print(e)

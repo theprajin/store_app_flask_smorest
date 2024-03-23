@@ -1,9 +1,17 @@
 from flask import jsonify
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
+from sqlalchemy import desc
+
 from app.models.item_model import Item
 from app.models.store_model import Store
-from app.schemas.item_schemas import ItemSchema, ItemCreateSchema
+from app.schemas.item_schemas import (
+    ItemSchema,
+    ItemCreateSchema,
+    ItemQuerySchema,
+    ItemTagSchema,
+    ItemCreateResponseSchema,
+)
 from app.app import db, URL_PREFIX
 
 item_blp = Blueprint(
@@ -16,18 +24,48 @@ item_blp = Blueprint(
 
 @item_blp.route("/")
 class Items(MethodView):
+
+    @item_blp.arguments(ItemQuerySchema, location="query")
     @item_blp.response(200, ItemSchema(many=True))
-    def get(self):
+    def get(self, queries):
         """Get Item List"""
         try:
-            items = Item.query.all()
-            return items
+            page = queries.pop("page", 1)
+            per_page = queries.pop("per_page", 10)
+            sortField = queries.pop("sortField", "")
+            sortDirection = queries.pop("sortDirection", "asc")
+
+            query = Item.query
+
+            if "name" in queries:
+                query = query.filter(Item.name.ilike(f"%{queries['name']}%"))
+
+            if "price" in queries:
+                query = query.filter(Item.unit_price == float(queries["price"]))
+
+            if sortField == "name":
+                if sortDirection == "desc":
+                    query = query.desc(Item.name)
+                else:
+                    query = query.order_by(Item.name)
+
+            if sortField == "price":
+                if sortDirection == "desc":
+                    query = query.order_by(desc(Item.unit_price))
+                else:
+                    query = query.order_by(Item.unit_price)
+
+            items = query.paginate(per_page=per_page, page=page, error_out=False)
+
+            if not items.items and page != 1:
+                abort(404, message="Page not found")
+
+            return items.items
         except Exception as e:
             print(e)
-            return jsonify({"message": "Something went wrong"}), 400
 
     @item_blp.arguments(ItemCreateSchema)
-    @item_blp.response(201, ItemSchema)
+    @item_blp.response(201, ItemCreateResponseSchema)
     def post(self, new_data):
         """Create Item"""
         try:
@@ -49,7 +87,8 @@ class Items(MethodView):
                 item = Item(**new_data)
                 db.session.add(item)
                 db.session.commit()
-            return item
+
+                return item
         except Exception as e:
             print(e)
 
@@ -57,7 +96,7 @@ class Items(MethodView):
 @item_blp.route("/<int:item_id>")
 class ItemByID(MethodView):
 
-    @item_blp.response(200, ItemSchema)
+    @item_blp.response(200, ItemTagSchema)
     def get(self, item_id):
         """Get Item By ID"""
         try:
@@ -84,6 +123,7 @@ class ItemByID(MethodView):
             item.unit_price = new_data.get("unit_price") or item.unit_price
             item.store_id = new_data.get("store_id") or item.store_id
             db.session.commit()
+
             return item
         except Exception as e:
             print(e)
@@ -99,6 +139,7 @@ class ItemByID(MethodView):
 
             db.session.delete(item)
             db.session.commit()
+
             return item
         except Exception as e:
             print(e)

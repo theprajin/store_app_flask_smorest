@@ -24,3 +24,12 @@ class StoreResponseSchema(StoreSchema):
         "ItemSchema", only=("id", "name", "unit_price"), many=True, exclude=("store",)
     )
     tags = ma.fields.List(ma.fields.Nested("TagSchema"), dump_only=True)
+
+
+class StoreQuerySchema(ma.Schema):
+    name = ma.fields.String(required=False)
+    location = ma.fields.String(required=False)
+    page = ma.fields.Int(required=False)
+    per_page = ma.fields.Int(required=False)
+    sortField = ma.fields.String(required=False)
+    sortDirection = ma.fields.String(required=False, default="asc")
