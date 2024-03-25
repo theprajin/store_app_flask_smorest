@@ -37,7 +37,7 @@ class Stores(MethodView):
 
             # Filetering queries
             if "name" in queries:
-                query = query.filter(Store.location.ilike(f"%{queries['name']}%"))
+                query = query.filter(Store.name.ilike(f"%{queries['name']}%"))
 
             if "location" in queries:
                 query = query.filter(Store.location.ilike(f"%{queries['location']}%"))
