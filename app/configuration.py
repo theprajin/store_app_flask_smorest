@@ -24,6 +24,8 @@ class BaseConfig:
     OPENAPI_RAPIDOC_PATH = "/rapidoc"
     OPENAPI_RAPIDOC_URL = "https://unpkg.com/rapidoc/dist/rapidoc-min.js"
 
+    PROPAGATE_EXCEPTIONS = True
+
 
 # Development Configurations
 class DevelopmentConfig(BaseConfig):
