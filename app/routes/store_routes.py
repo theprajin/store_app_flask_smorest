@@ -45,7 +45,7 @@ class Stores(MethodView):
             # sorting queries
             if sortField == "name":
                 if sortDirection == "desc":
-                    query = query.desc(Store.name)
+                    query = query.order_by(desc(Store.name))
                 else:
                     query = query.order_by(Store.name)
 
