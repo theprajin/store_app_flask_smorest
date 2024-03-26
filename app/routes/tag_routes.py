@@ -2,6 +2,7 @@ from flask import jsonify
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from sqlalchemy.orm.collections import InstrumentedList
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from app.app import URL_PREFIX, db
 from app.models.tag_model import Tag
@@ -45,25 +46,35 @@ class StoreTag(MethodView):
 
     @tag_blp.arguments(TagSchema)
     @tag_blp.response(200, TagResponseSchema)
+    @jwt_required()
     def post(self, new_data, store_id):
         """Create Store Tags"""
         try:
-            store = Store.query.get(store_id)
+            current_user = get_jwt_identity()
+            if current_user.get("role") == "admin":
+                store = Store.query.get(store_id)
 
-            if store is None:
-                return jsonify({"message": f"Store with id: {store_id} not found"}), 404
+                if store is None:
+                    return (
+                        jsonify({"message": f"Store with id: {store_id} not found"}),
+                        404,
+                    )
 
-            tag = Tag(**new_data)
-            print(tag.name)
-            for i in store.tags:
-                if i.name == tag.name:
-                    return jsonify({"message": "Tag already exists"}), 400
-            store.tags.append(tag)
+                tag = Tag(**new_data)
+                print(tag.name)
+                for i in store.tags:
+                    if i.name == tag.name:
+                        return jsonify({"message": "Tag already exists"}), 400
+                store.tags.append(tag)
 
-            db.session.add(tag)
-            db.session.commit()
+                db.session.add(tag)
+                db.session.commit()
 
-            return tag
+                return tag
+
+            else:
+                return jsonify({"message": "Unauthorized access"}), 401
+
         except Exception as e:
             print(e)
 
@@ -88,37 +99,57 @@ class StoreTagByID(MethodView):
 
     @tag_blp.arguments(TagSchema)
     @tag_blp.response(200, TagResponseSchema)
+    @jwt_required()
     def patch(self, new_data, store_id, tag_id):
         """Update Store Tag"""
         try:
-            store = Store.query.get(store_id)
-            if store is None:
-                return jsonify({"message": f"Store with id: {store_id} not found"}), 404
+            current_user = get_jwt_identity()
+            if current_user.get("role") == "admin":
+                store = Store.query.get(store_id)
+                if store is None:
+                    return (
+                        jsonify({"message": f"Store with id: {store_id} not found"}),
+                        404,
+                    )
 
-            tag = Tag.query.get(tag_id)
-            if tag is None:
-                return jsonify({"message": f"Tag with id: {tag_id} not found"}), 404
-            tag.name = new_data.get("name") or tag.name
-            db.session.commit()
-            return tag
+                tag = Tag.query.get(tag_id)
+                if tag is None:
+                    return jsonify({"message": f"Tag with id: {tag_id} not found"}), 404
+                tag.name = new_data.get("name") or tag.name
+                db.session.commit()
+                return tag
+
+            else:
+                return jsonify({"message": "Unauthorized access"}), 401
+
         except Exception as e:
             print(e)
 
     @tag_blp.response(200, TagResponseSchema)
+    @jwt_required()
     def delete(self, store_id, tag_id):
         """Remove Store Tags"""
         try:
-            store = Store.query.get(store_id)
-            if store is None:
-                return jsonify({"message": f"Store with id: {store_id} not found"}), 404
+            current_user = get_jwt_identity()
+            if current_user.get("role") == "admin":
+                store = Store.query.get(store_id)
+                if store is None:
+                    return (
+                        jsonify({"message": f"Store with id: {store_id} not found"}),
+                        404,
+                    )
 
-            tag = Tag.query.get(tag_id)
-            if tag is None:
-                return jsonify({"message": f"Tag with id: {tag_id} not found"}), 404
-            store.tags.remove(tag)
+                tag = Tag.query.get(tag_id)
+                if tag is None:
+                    return jsonify({"message": f"Tag with id: {tag_id} not found"}), 404
+                store.tags.remove(tag)
 
-            db.session.commit()
-            return tag
+                db.session.commit()
+                return tag
+
+            else:
+                return jsonify({"message": "Unauthorized access"}), 401
+
         except Exception as e:
             print(e)
 
@@ -147,26 +178,36 @@ class ItemTag(MethodView):
 
     @tag_blp.arguments(TagSchema)
     @tag_blp.response(200, TagResponseSchema)
+    @jwt_required()
     def post(self, new_data, item_id):
         """Create Item Tags"""
         try:
-            item = Item.query.get(item_id)
-            name = new_data.get("name")
+            current_user = get_jwt_identity()
+            if current_user.get("role") == "admin":
+                item = Item.query.get(item_id)
+                name = new_data.get("name")
 
-            if item is None:
-                return jsonify({"message": f"Item with id: {item_id} not found"}), 404
+                if item is None:
+                    return (
+                        jsonify({"message": f"Item with id: {item_id} not found"}),
+                        404,
+                    )
 
-            tag = Tag(**new_data)
-            print(tag.name)
-            for i in item.tags:
-                if i.name == item.name:
-                    return jsonify({"message": "Tag already exists"}), 400
-            item.tags.append(tag)
+                tag = Tag(**new_data)
+                print(tag.name)
+                for i in item.tags:
+                    if i.name == item.name:
+                        return jsonify({"message": "Tag already exists"}), 400
+                item.tags.append(tag)
 
-            db.session.add(tag)
-            db.session.commit()
+                db.session.add(tag)
+                db.session.commit()
 
-            return tag
+                return tag
+
+            else:
+                return jsonify({"message": "Unauthorized access"}), 401
+
         except Exception as e:
             print(e)
 
@@ -190,37 +231,58 @@ class ItemTagByID(MethodView):
 
     @tag_blp.arguments(TagSchema)
     @tag_blp.response(200, TagResponseSchema)
+    @jwt_required()
     def patch(self, new_data, item_id, tag_id):
         """Update Item Tag"""
         try:
-            item = Item.query.get(store_id)
-            if item is None:
-                return jsonify({"message": f"Store with id: {item_id} not found"}), 404
+            current_user = get_jwt_identity()
+            if current_user.get("role") == "admin":
+                item = Item.query.get(store_id)
+                if item is None:
+                    return (
+                        jsonify({"message": f"Store with id: {item_id} not found"}),
+                        404,
+                    )
 
-            tag = Tag.query.get(tag_id)
-            if tag is None:
-                return jsonify({"message": f"Tag with id: {tag_id} not found"}), 404
-            tag.name = new_data.get("name") or tag.name
-            db.session.commit()
-            return tag
+                tag = Tag.query.get(tag_id)
+                if tag is None:
+                    return jsonify({"message": f"Tag with id: {tag_id} not found"}), 404
+                tag.name = new_data.get("name") or tag.name
+                db.session.commit()
+                return tag
+
+            else:
+                return jsonify({"message": "Unauthorized access"}), 401
+
         except Exception as e:
             print(e)
 
     @tag_blp.response(200, TagResponseSchema)
+    @jwt_required()
     def delete(self, item_id, tag_id):
         """Remove Item Tags"""
         try:
-            item = Item.query.get(item_id)
-            if item is None:
-                return jsonify({"message": f"Store with id: {item_id} not found"}), 404
+            current_user = get_jwt_identity()
+            if current_user.get("role") == "admin":
 
-            tag = Tag.query.get(tag_id)
-            if tag is None:
-                return jsonify({"message": f"Tag with id: {tag_id} not found"}), 404
+                item = Item.query.get(item_id)
+                if item is None:
+                    return (
+                        jsonify({"message": f"Store with id: {item_id} not found"}),
+                        404,
+                    )
 
-            item.tags.remove(tag)
+                tag = Tag.query.get(tag_id)
+                if tag is None:
+                    return jsonify({"message": f"Tag with id: {tag_id} not found"}), 404
 
-            db.session.commit()
-            return tag
+                item.tags.remove(tag)
+
+                db.session.commit()
+                return tag
+
+            else:
+                return jsonify({"message": "Unauthorized access"}), 401
+
         except Exception as e:
             print(e)
