@@ -7,7 +7,7 @@ from flask_security import Security
 from flask_jwt_extended import JWTManager
 
 from app import configuration
-from app.extensions import jwt
+from app.extensions import jwt, cors
 from app.services.unauthorized_error import custom_unauthorized_response
 
 
@@ -21,6 +21,8 @@ def create_app():
     app = Flask(__name__)
 
     app.config.from_object(configuration.DevelopmentConfig)
+
+    cors.init_app(app)
 
     db.init_app(app)
 
