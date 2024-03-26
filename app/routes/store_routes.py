@@ -2,6 +2,8 @@ from flask import jsonify
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from sqlalchemy import desc
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended.exceptions import NoAuthorizationError
 
 from app.models.store_model import Store
 from app.schemas.store_schemas import (
@@ -66,21 +68,27 @@ class Stores(MethodView):
 
     @store_blp.arguments(StoreCreateSchema)
     @store_blp.response(201, StoreSchema)
+    @jwt_required()
     def post(self, new_data):
         """Create Store"""
         try:
             name = new_data.get("name")
-            store = Store.query.filter_by(name=name).first()
 
-            if store:
-                return jsonify({"message": "Store already exists"}), 400
+            current_user = get_jwt_identity()
+
+            if current_user.get("role") == "admin":
+                store = Store.query.filter_by(name=name).first()
+                if store:
+                    return jsonify({"message": "Store already exists"}), 400
+                else:
+                    store = Store(**new_data)
+                    db.session.add(store)
+                    db.session.commit()
+                    return store
             else:
-                store = Store(**new_data)
-                db.session.add(store)
-                db.session.commit()
-                return store
+                return jsonify({"message": "Unauthorized access"}), 401
         except Exception as e:
-            print(e)
+            print(f"create store failed: {e}")
 
 
 @store_blp.route("/<int:store_id>")
@@ -90,47 +98,75 @@ class StoreByID(MethodView):
     def get(self, store_id):
         """Get Store By ID"""
         try:
+            current_user = get_jwt_identity()
+            if current_user.get("role") == "admin":
+                pass
+
+            else:
+                return jsonify({"message": "Unauthorized access"}), 401
+
             store = Store.query.get(store_id)
-            print(store)
 
             if store is None:
-                return jsonify({"message": f"Store with id: {store_id} not found"}), 404
+                return (
+                    jsonify({"message": f"Store with id: {store_id} not found"}),
+                    404,
+                )
 
             return store
+
         except Exception as e:
             print(e)
 
     @store_blp.arguments(StoreSchema)
     @store_blp.response(200, StoreSchema)
+    @jwt_required()
     def patch(self, new_data, store_id):
         """Update Store By ID"""
         try:
-            store = Store.query.get(store_id)
+            current_user = get_jwt_identity()
+            if current_user.get("role") == "admin":
+                store = Store.query.get(store_id)
 
-            if store is None:
-                return jsonify({"message": f"Store with id: {store_id} not found"}), 404
+                if store is None:
+                    return (
+                        jsonify({"message": f"Store with id: {store_id} not found"}),
+                        404,
+                    )
 
-            store.name = new_data.get("name") or store.name
-            store.description = new_data.get("description") or store.description
-            store.location = new_data.get("location") or store.location
-            db.session.commit()
+                store.name = new_data.get("name") or store.name
+                store.description = new_data.get("description") or store.description
+                store.location = new_data.get("location") or store.location
+                db.session.commit()
 
-            return store
+                return store
+            else:
+                return jsonify({"message": "Unauthorized access"}), 401
+
         except Exception as e:
             print(e)
 
     @store_blp.response(204, StoreSchema)
+    @jwt_required()
     def delete(self, store_id):
         """Delete Store By ID"""
         try:
-            store = Store.query.get(store_id)
+            current_user = get_jwt_identity()
+            if current_user.get("role") == "admin":
+                store = Store.query.get(store_id)
 
-            if store is None:
-                return jsonify({"message": f"Store with id: {store_id} not found"}), 404
+                if store is None:
+                    return (
+                        jsonify({"message": f"Store with id: {store_id} not found"}),
+                        404,
+                    )
 
-            db.session.delete(store)
-            db.session.commit()
+                db.session.delete(store)
+                db.session.commit()
 
-            return store
+                return store
+            else:
+                return jsonify({"message": "Unauthorized access"}), 401
+
         except Exception as e:
             print(e)

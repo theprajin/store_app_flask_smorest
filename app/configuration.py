@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,7 +9,9 @@ load_dotenv()
 class BaseConfig:
     DEBUG = True
     TESTING = False
-    SECRET_KEY = os.getenv("SECRET_KEY")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+    SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT")
+    SECURITY_PASSWORD_HASH = os.getenv("SECURITY_PASSWORD_HASH")
 
     API_TITLE = "Store API"
     API_VERSION = "v1"
@@ -25,6 +28,10 @@ class BaseConfig:
     OPENAPI_RAPIDOC_URL = "https://unpkg.com/rapidoc/dist/rapidoc-min.js"
 
     PROPAGATE_EXCEPTIONS = True
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
 
 
 # Development Configurations
