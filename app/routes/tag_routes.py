@@ -4,7 +4,8 @@ from flask_smorest import Blueprint, abort
 from sqlalchemy.orm.collections import InstrumentedList
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from app.app import URL_PREFIX, db
+from app.app import URL_PREFIX
+from app.extensions import db
 from app.models.tag_model import Tag
 from app.models.store_model import Store
 from app.models.item_model import Item

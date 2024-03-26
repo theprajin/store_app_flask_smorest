@@ -9,9 +9,10 @@ load_dotenv()
 class BaseConfig:
     DEBUG = True
     TESTING = False
+
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-    SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT")
-    SECURITY_PASSWORD_HASH = os.getenv("SECURITY_PASSWORD_HASH")
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
 
     API_TITLE = "Store API"
     API_VERSION = "v1"
@@ -29,9 +30,6 @@ class BaseConfig:
 
     PROPAGATE_EXCEPTIONS = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)
-    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
 
 
 # Development Configurations

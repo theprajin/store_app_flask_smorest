@@ -1,20 +1,16 @@
 from flask import Flask
 from flask.views import MethodView
-from flask_sqlalchemy import SQLAlchemy
+
 from flask_smorest import Api
-from flask_migrate import Migrate
-from flask_security import Security
-from flask_jwt_extended import JWTManager
+
 
 from app import configuration
-from app.extensions import jwt, cors
+from app.extensions import db, migrate, jwt, cors
+
 from app.services.unauthorized_error import custom_unauthorized_response
 
 
 URL_PREFIX = "/api/v1"
-
-db = SQLAlchemy()
-migrate = Migrate()
 
 
 def create_app():

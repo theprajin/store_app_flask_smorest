@@ -12,7 +12,8 @@ from app.schemas.store_schemas import (
     StoreTagSchema,
     StoreQuerySchema,
 )
-from app.app import db, URL_PREFIX
+from app.app import URL_PREFIX
+from app.extensions import db
 
 store_blp = Blueprint(
     "stores",
@@ -72,11 +73,9 @@ class Stores(MethodView):
     def post(self, new_data):
         """Create Store"""
         try:
-            name = new_data.get("name")
-
             current_user = get_jwt_identity()
-
             if current_user.get("role") == "admin":
+                name = new_data.get("name")
                 store = Store.query.filter_by(name=name).first()
                 if store:
                     return jsonify({"message": "Store already exists"}), 400

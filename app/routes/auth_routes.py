@@ -16,7 +16,8 @@ from app.schemas.user_schemas import (
 )
 from app.services.token_user import create_token_user
 
-from app.app import URL_PREFIX, db
+from app.app import URL_PREFIX
+from app.extensions import db
 
 
 auth_blp = Blueprint(

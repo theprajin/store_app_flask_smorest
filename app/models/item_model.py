@@ -1,4 +1,4 @@
-from app.app import db
+from app.extensions import db
 from app.models.association_models import item_tag_table
 
 

@@ -13,7 +13,8 @@ from app.schemas.item_schemas import (
     ItemTagSchema,
     ItemCreateResponseSchema,
 )
-from app.app import db, URL_PREFIX
+from app.app import  URL_PREFIX
+from app.extensions import db
 
 item_blp = Blueprint(
     "items",

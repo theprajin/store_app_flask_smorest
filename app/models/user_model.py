@@ -3,7 +3,7 @@ from passlib.hash import bcrypt
 from sqlalchemy import Enum
 from sqlalchemy.exc import IntegrityError
 
-from app.app import db
+from app.extensions import db
 
 
 class UserRole(enum.Enum):
