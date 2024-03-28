@@ -1,4 +1,5 @@
 from app.app import db, create_app
+from app.services import decorators
 
 
 app = create_app()

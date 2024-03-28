@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import jsonify, g
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from flask_jwt_extended import (
@@ -8,7 +8,8 @@ from flask_jwt_extended import (
     jwt_required,
 )
 
-from app.models.user_model import User, UserRole
+from app.models.user_model import User
+from app.models.role_model import Role
 from app.schemas.user_schemas import (
     UserCreateSchema,
     UserResponseSchema,
@@ -18,6 +19,8 @@ from app.services.token_user import create_token_user
 
 from app.app import URL_PREFIX
 from app.extensions import db
+
+from app.services.decorators import load_user_from_request
 
 
 auth_blp = Blueprint(
@@ -32,24 +35,43 @@ class Register(MethodView):
     @auth_blp.response(200, UserResponseSchema)
     def post(self, new_data):
         """Register User"""
+        # prit(register)
         try:
             first_name = new_data.get("first_name")
             last_name = new_data.get("last_name")
             email = new_data.get("email")
             password = new_data.get("password")
-            role = new_data.get("role")
 
+            # Total number of users in the User table
             total_user = db.session.query(User).count()
 
-            role = UserRole.ADMIN if total_user <= 0 else UserRole.USER
+            # Create a superadmin only if there are no users
+            if total_user <= 0:
+                role = Role.query.filter_by(is_super=True).first()
+                if role is None:
+                    role = Role.create_role(is_super=True, is_admin=True, name="super")
 
+                user = User.create_user(
+                    first_name=first_name,
+                    last_name=last_name,
+                    email=email,
+                    password=password,
+                )
+
+                user.roles.append(role)
+                db.session.commit()
+                g.current_user = user
+                return
+
+            # create a new user
             user = User.create_user(
                 first_name=first_name,
                 last_name=last_name,
                 email=email,
                 password=password,
-                role=role,
             )
+
+            db.session.commit()
 
             return jsonify({"message": "user registration successful"}), 201
         except ValueError:

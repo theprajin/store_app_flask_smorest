@@ -2,8 +2,6 @@ import marshmallow as ma
 from marshmallow import validates, ValidationError
 from email_validator import validate_email, EmailNotValidError
 
-from app.models.user_model import UserRole
-
 
 class UserCreateSchema(ma.Schema):
     id = ma.fields.Int(dump_only=True)
@@ -11,7 +9,6 @@ class UserCreateSchema(ma.Schema):
     last_name = ma.fields.String(required=True)
     email = ma.fields.Email(required=True)
     password = ma.fields.String(required=True)
-    role = ma.fields.String(required=True)
     created_at = ma.fields.DateTime(dump_only=True)
 
     @validates("email")
@@ -36,7 +33,6 @@ class UserResponseSchema(ma.Schema):
     first_name = ma.fields.String()
     last_name = ma.fields.String()
     email = ma.fields.Email()
-    role = ma.fields.String()
     created_at = ma.fields.DateTime(dump_only=True)
 
 
