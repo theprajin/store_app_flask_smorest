@@ -50,6 +50,7 @@ class Permissions(MethodView):
             return jsonify({"error": str(e)}), 401
 
 
+@perm_blp.route("/<int:permission_id>")
 class PermissionById(MethodView):
 
     @perm_blp.response(200, PermissionSchema)
@@ -57,7 +58,11 @@ class PermissionById(MethodView):
     @load_user_from_request
     def get(self, permission_id):
         """Get Permission"""
-        return Permission.query.get_or_404(permission_id)
+        try:
+            permission = Permission.query.get(permission_id)
+            return permission
+        except Exception as e:
+            print(e)
 
     @perm_blp.arguments(PermissionSchema)
     @perm_blp.response(200, PermissionSchema)
