@@ -1,11 +1,15 @@
-from flask import Flask
+from flask import Flask, g, jsonify
 from flask.views import MethodView
 
+
 from flask_smorest import Api
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 
 from app import configuration
-from app.extensions import app, db, migrate, jwt, cors
+from app.extensions import db, migrate, jwt, cors
+from app.models.user_model import User
+from app.services.exceptions import UnauthorizedAccessException
 
 from app.services.unauthorized_error import custom_unauthorized_response
 
@@ -14,6 +18,7 @@ URL_PREFIX = "/api/v1"
 
 
 def create_app():
+    app = Flask(__name__)
 
     app.config.from_object(configuration.DevelopmentConfig)
 
@@ -36,6 +41,23 @@ def create_app():
     migrate.init_app(app, db)
 
     jwt.init_app(app)
+
+    @app.before_request
+    @jwt_required(optional=True)
+    def load_user_into_g():
+        user_identity = get_jwt_identity()
+        if user_identity:
+            user_id = user_identity.get("id")
+            if user_id:
+                user = User.query.get(user_id)
+                g.current_user = user
+            else:
+                g.current_user = None
+
+    @app.errorhandler(UnauthorizedAccessException)
+    def handle_unauthorized_access(error):
+        """Handle UnauthorizedAccessException exceptions globally."""
+        return jsonify({"error": "Unauthorized Access"}), 403
 
     from app.routes.store_routes import store_blp
     from app.routes.item_routes import item_blp

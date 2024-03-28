@@ -82,6 +82,7 @@ class Register(MethodView):
 class Login(MethodView):
     @auth_blp.arguments(UserLoginSchema)
     @auth_blp.response(200, UserResponseSchema)
+    @jwt_required(optional=True)
     def post(self, new_data):
         """Login User"""
         try:

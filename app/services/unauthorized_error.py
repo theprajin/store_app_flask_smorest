@@ -1,5 +1,6 @@
 from flask import jsonify
 from app.extensions import jwt
+from app.services.exceptions import UnauthorizedAccessException
 
 
 @jwt.unauthorized_loader

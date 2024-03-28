@@ -10,8 +10,9 @@ from app.app import URL_PREFIX
 from app.models.permission_model import Permission
 from app.schemas.permission_schemas import PermissionSchema
 from app.services.decorators import user_is_super, load_user_from_request
+
 from app.models.user_model import User
-from app.extensions import db, app
+from app.extensions import db
 
 
 perm_blp = Blueprint(
@@ -32,22 +33,16 @@ class Permissions(MethodView):
 
     @perm_blp.arguments(PermissionSchema)
     @perm_blp.response(201, PermissionSchema)
-    @jwt_required()
+    @user_is_super
+    @load_user_from_request
     def post(self, new_data):
         """Create Permission"""
         try:
-            user_id = get_jwt_identity().get("id")
-            user = User.query.filter_by(id=user_id).first()
 
-            @user_is_super(user)
-            def create_permission():
-                permission = Permission(**new_data)
-                db.session.add(permission)
-                db.session.commit()
+            permission = Permission(**new_data)
+            db.session.add(permission)
+            db.session.commit()
 
-                return permission
-
-            permission = create_permission()
             return permission
 
         except Exception as e:
@@ -58,14 +53,16 @@ class Permissions(MethodView):
 class PermissionById(MethodView):
 
     @perm_blp.response(200, PermissionSchema)
-    @jwt_required()
+    @user_is_super
+    @load_user_from_request
     def get(self, permission_id):
         """Get Permission"""
         return Permission.query.get_or_404(permission_id)
 
     @perm_blp.arguments(PermissionSchema)
     @perm_blp.response(200, PermissionSchema)
-    @jwt_required()
+    @user_is_super
+    @load_user_from_request
     def patch(self, new_data, permission_id):
         """Update Permission"""
         permission = Permission.query.get_or_404(permission_id)
@@ -74,7 +71,8 @@ class PermissionById(MethodView):
         return permission
 
     @perm_blp.response(204)
-    @jwt_required()
+    @user_is_super
+    @load_user_from_request
     def delete(self, permission_id):
         """Delete Permission"""
         permission = Permission.query.get_or_404(permission_id)

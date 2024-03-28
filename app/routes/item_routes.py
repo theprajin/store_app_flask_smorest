@@ -13,8 +13,10 @@ from app.schemas.item_schemas import (
     ItemTagSchema,
     ItemCreateResponseSchema,
 )
-from app.app import  URL_PREFIX
+from app.app import URL_PREFIX
 from app.extensions import db
+
+from app.services.decorators import load_user_from_request, user_is_super
 
 item_blp = Blueprint(
     "items",
@@ -68,39 +70,36 @@ class Items(MethodView):
 
     @item_blp.arguments(ItemCreateSchema)
     @item_blp.response(201, ItemCreateResponseSchema)
-    @jwt_required()
+    @user_is_super
+    @load_user_from_request
     def post(self, new_data):
         """Create Item"""
         try:
-            current_user = get_jwt_identity()
-            if current_user.get("role") == "admin":
-                name = new_data.get("name")
 
-                store_id = new_data.get("store_id")
+            name = new_data.get("name")
 
-                # check if store exists
-                store = Store.query.get(store_id)
-                if store is None:
-                    return (
-                        jsonify({"message": f"Store with id: {store_id} not found"}),
-                        404,
-                    )
+            store_id = new_data.get("store_id")
 
-                # check for duplicate name of item
-                item = Item.query.filter_by(name=name).first()
+            # check if store exists
+            store = Store.query.get(store_id)
+            if store is None:
+                return (
+                    jsonify({"message": f"Store with id: {store_id} not found"}),
+                    404,
+                )
 
-                if item:
-                    return jsonify({"message": "Item already exists"}), 400
+            # check for duplicate name of item
+            item = Item.query.filter_by(name=name).first()
 
-                else:
-                    item = Item(**new_data)
-                    db.session.add(item)
-                    db.session.commit()
-
-                    return item
+            if item:
+                return jsonify({"message": "Item already exists"}), 400
 
             else:
-                return jsonify({"message": "Unauthorized access"}), 401
+                item = Item(**new_data)
+                db.session.add(item)
+                db.session.commit()
+
+                return item
 
         except Exception as e:
             print(e)
@@ -123,56 +122,50 @@ class ItemByID(MethodView):
 
     @item_blp.arguments(ItemSchema)
     @item_blp.response(200, ItemSchema)
-    @jwt_required()
+    @user_is_super
+    @load_user_from_request
     def patch(self, new_data, item_id):
         """Update Item By ID"""
         try:
-            current_user = get_jwt_identity()
-            if current_user.get("role") == "admin":
-                item: Item = Item.query.get(item_id)
 
-                if item is None:
-                    return (
-                        jsonify({"message": f"Item with id: {item_id} not found"}),
-                        404,
-                    )
+            item: Item = Item.query.get(item_id)
 
-                item.name = new_data.get("name") or item.name
-                item.description = new_data.get("description") or item.description
-                item.unit_price = new_data.get("unit_price") or item.unit_price
-                item.store_id = new_data.get("store_id") or item.store_id
-                db.session.commit()
+            if item is None:
+                return (
+                    jsonify({"message": f"Item with id: {item_id} not found"}),
+                    404,
+                )
 
-                return item
+            item.name = new_data.get("name") or item.name
+            item.description = new_data.get("description") or item.description
+            item.unit_price = new_data.get("unit_price") or item.unit_price
+            item.store_id = new_data.get("store_id") or item.store_id
+            db.session.commit()
 
-            else:
-                return jsonify({"message": "Unauthorized access"}), 401
+            return item
 
         except Exception as e:
             print(e)
 
     @item_blp.response(204, ItemSchema)
-    @jwt_required()
+    @user_is_super
+    @load_user_from_request
     def delete(self, item_id):
         """Delete Item By ID"""
         try:
-            current_user = get_jwt_identity()
-            if current_user.get("role") == "admin":
-                item = Item.query.get(item_id)
 
-                if item is None:
-                    return (
-                        jsonify({"message": f"Item with id: {item_id} not found"}),
-                        404,
-                    )
+            item = Item.query.get(item_id)
 
-                db.session.delete(item)
-                db.session.commit()
+            if item is None:
+                return (
+                    jsonify({"message": f"Item with id: {item_id} not found"}),
+                    404,
+                )
 
-                return item
+            db.session.delete(item)
+            db.session.commit()
 
-            else:
-                return jsonify({"message": "Unauthorized access"}), 401
+            return item
 
         except Exception as e:
             print(e)
