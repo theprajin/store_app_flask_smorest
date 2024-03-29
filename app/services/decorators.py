@@ -23,7 +23,7 @@ def load_user_from_request(fn):
     return wrapper
 
 
-def user_is_super(fn):
+def superuser_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         user = g.get("current_user")

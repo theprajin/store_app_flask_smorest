@@ -64,12 +64,18 @@ def create_app():
     from app.routes.tag_routes import tag_blp
     from app.routes.auth_routes import auth_blp
     from app.routes.permission_routes import perm_blp
+    from app.routes.role_routes import role_blp
+    from app.routes.user_routes import user_blp
+    from app.routes.role_permission_routes import role_perm_blp
 
     api = Api(app)
     api.register_blueprint(auth_blp)
+    api.register_blueprint(perm_blp)
+    api.register_blueprint(role_blp)
+    api.register_blueprint(role_perm_blp)
     api.register_blueprint(store_blp)
     api.register_blueprint(item_blp)
     api.register_blueprint(tag_blp)
-    api.register_blueprint(perm_blp)
+    api.register_blueprint(user_blp)
 
     return app

@@ -12,7 +12,7 @@ from app.models.item_model import Item
 from app.schemas.tag_schemas import TagSchema, TagResponseSchema
 from app.schemas.store_schemas import StoreTagSchema
 from app.schemas.item_schemas import ItemTagSchema
-from app.services.decorators import load_user_from_request, user_is_super
+from app.services.decorators import load_user_from_request, superuser_required
 
 
 tag_blp = Blueprint(
@@ -48,7 +48,7 @@ class StoreTag(MethodView):
 
     @tag_blp.arguments(TagSchema)
     @tag_blp.response(200, TagResponseSchema)
-    @user_is_super
+    @superuser_required
     @load_user_from_request
     def post(self, new_data, store_id):
         """Create Store Tags"""
@@ -98,7 +98,7 @@ class StoreTagByID(MethodView):
 
     @tag_blp.arguments(TagSchema)
     @tag_blp.response(200, TagResponseSchema)
-    @user_is_super
+    @superuser_required
     @load_user_from_request
     def patch(self, new_data, store_id, tag_id):
         """Update Store Tag"""
@@ -122,7 +122,7 @@ class StoreTagByID(MethodView):
             print(e)
 
     @tag_blp.response(200, TagResponseSchema)
-    @user_is_super
+    @superuser_required
     @load_user_from_request
     def delete(self, store_id, tag_id):
         """Remove Store Tags"""
@@ -171,7 +171,7 @@ class ItemTag(MethodView):
 
     @tag_blp.arguments(TagSchema)
     @tag_blp.response(200, TagResponseSchema)
-    @user_is_super
+    @superuser_required
     @load_user_from_request
     def post(self, new_data, item_id):
         """Create Item Tags"""
@@ -221,7 +221,7 @@ class ItemTagByID(MethodView):
 
     @tag_blp.arguments(TagSchema)
     @tag_blp.response(200, TagResponseSchema)
-    @user_is_super
+    @superuser_required
     @load_user_from_request
     def patch(self, new_data, item_id, tag_id):
         """Update Item Tag"""
@@ -245,7 +245,7 @@ class ItemTagByID(MethodView):
             print(e)
 
     @tag_blp.response(200, TagResponseSchema)
-    @user_is_super
+    @superuser_required
     @load_user_from_request
     def delete(self, item_id, tag_id):
         """Remove Item Tags"""
