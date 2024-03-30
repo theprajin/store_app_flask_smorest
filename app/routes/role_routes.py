@@ -21,6 +21,8 @@ role_blp = Blueprint(
 @role_blp.route("/")
 class Roles(MethodView):
     @role_blp.response(200, RoleSchema(many=True))
+    @superuser_required
+    @load_user_from_request
     def get(self):
         """Get Role List"""
         return Role.query.all()

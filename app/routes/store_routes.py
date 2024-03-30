@@ -14,7 +14,11 @@ from app.schemas.store_schemas import (
 )
 from app.app import URL_PREFIX
 from app.extensions import db
-from app.services.decorators import load_user_from_request, superuser_required
+from app.services.decorators import (
+    load_user_from_request,
+    superuser_required,
+    permission_required,
+)
 
 store_blp = Blueprint(
     "stores",
@@ -70,7 +74,7 @@ class Stores(MethodView):
 
     @store_blp.arguments(StoreCreateSchema)
     @store_blp.response(201, StoreSchema)
-    @superuser_required
+    @permission_required("can_manage_store")
     @load_user_from_request
     def post(self, new_data):
         """Create Store"""
@@ -110,7 +114,7 @@ class StoreByID(MethodView):
 
     @store_blp.arguments(StoreSchema)
     @store_blp.response(200, StoreSchema)
-    @superuser_required
+    @permission_required("can_manage_store")
     @load_user_from_request
     def patch(self, new_data, store_id):
         """Update Store By ID"""
@@ -135,7 +139,7 @@ class StoreByID(MethodView):
             print(e)
 
     @store_blp.response(204, StoreSchema)
-    @superuser_required
+    @permission_required("can_manage_store")
     @load_user_from_request
     def delete(self, store_id):
         """Delete Store By ID"""

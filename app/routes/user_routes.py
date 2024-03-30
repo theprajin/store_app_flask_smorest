@@ -25,6 +25,7 @@ user_blp = Blueprint(
 class Users(MethodView):
 
     @user_blp.response(200, UserRoleSchema(many=True))
+    @superuser_required
     def get(self):
         """Get User List"""
         return User.query.all()
@@ -34,8 +35,8 @@ class Users(MethodView):
 class UserById(MethodView):
 
     @user_blp.response(200, UserRoleSchema)
-    # @superuser_required
-    # @load_user_from_request
+    @superuser_required
+    @load_user_from_request
     def get(self, user_id):
         """Get User"""
         try:
@@ -69,6 +70,8 @@ class UserProfile(MethodView):
 class UserRoles(MethodView):
 
     @user_blp.response(201, UserRoleSchema)
+    @superuser_required
+    @load_user_from_request
     def post(self, user_id, role_id):
         """Assign Role to User"""
 
@@ -94,6 +97,8 @@ class UserRoles(MethodView):
             print(e)
 
     @user_blp.response(204, UserRoleSchema)
+    @superuser_required
+    @load_user_from_request
     def delete(self, user_id, role_id):
         """Remove Role from User"""
 

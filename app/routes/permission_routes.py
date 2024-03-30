@@ -27,6 +27,8 @@ perm_blp = Blueprint(
 class Permissions(MethodView):
 
     @perm_blp.response(200, PermissionSchema(many=True))
+    @superuser_required
+    @load_user_from_request
     def get(self):
         """Get Permission List"""
         return Permission.query.all()

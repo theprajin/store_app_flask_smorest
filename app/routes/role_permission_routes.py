@@ -9,6 +9,7 @@ from app.models.permission_model import Permission
 from app.schemas.role_schemas import RoleSchema
 from app.schemas.permission_schemas import PermissionSchema
 from app.schemas.role_permission_schemas import RolePermissionSchema
+from app.services.decorators import superuser_required, load_user_from_request
 from app.extensions import db
 from app.app import URL_PREFIX
 
@@ -23,6 +24,8 @@ role_perm_blp = Blueprint(
 class RolePermission(MethodView):
 
     @role_perm_blp.response(201, RolePermissionSchema)
+    @superuser_required
+    @load_user_from_request
     def post(self, role_id, permission_id):
         """Assign Role to User"""
 
@@ -48,6 +51,8 @@ class RolePermission(MethodView):
             print(e)
 
     @role_perm_blp.response(204, RolePermissionSchema)
+    @superuser_required
+    @load_user_from_request
     def delete(self, role_id, permission_id):
         """Remove Role from User"""
 

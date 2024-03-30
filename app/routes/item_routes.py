@@ -16,7 +16,11 @@ from app.schemas.item_schemas import (
 from app.app import URL_PREFIX
 from app.extensions import db
 
-from app.services.decorators import load_user_from_request, superuser_required
+from app.services.decorators import (
+    load_user_from_request,
+    superuser_required,
+    permission_required,
+)
 
 item_blp = Blueprint(
     "items",
@@ -70,7 +74,7 @@ class Items(MethodView):
 
     @item_blp.arguments(ItemCreateSchema)
     @item_blp.response(201, ItemCreateResponseSchema)
-    @superuser_required
+    @permission_required("can_manage_item")
     @load_user_from_request
     def post(self, new_data):
         """Create Item"""
@@ -122,7 +126,7 @@ class ItemByID(MethodView):
 
     @item_blp.arguments(ItemSchema)
     @item_blp.response(200, ItemSchema)
-    @superuser_required
+    @permission_required("can_manage_item")
     @load_user_from_request
     def patch(self, new_data, item_id):
         """Update Item By ID"""
@@ -148,7 +152,7 @@ class ItemByID(MethodView):
             print(e)
 
     @item_blp.response(204, ItemSchema)
-    @superuser_required
+    @permission_required("can_manage_item")
     @load_user_from_request
     def delete(self, item_id):
         """Delete Item By ID"""
