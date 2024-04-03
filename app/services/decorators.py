@@ -52,6 +52,8 @@ def permission_required(*permissions):
                 # superuser has all permissions
                 if role.is_super:
                     return fn(*args, **kwargs)
+
+                # check permissions for other users
                 for permission in role.permissions:
                     if permission.system_name in permissions:
                         return fn(*args, **kwargs)
